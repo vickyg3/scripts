@@ -40507,7 +40507,8 @@ glanced
 glances
 glancing
 glancingly
-gland
+gland
+
 glanders
 glandes
 glands
@@ -92106,6 +92107,7 @@ steamships
 steamy
 stearic
 stearin
+stearine
 steatite
 steatopygia
 steatopygic
