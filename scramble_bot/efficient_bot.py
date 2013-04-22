@@ -2,6 +2,8 @@
 # Scramble bot used to play "Scramble with Friends!"
 # Values are hard coded for nexus 7 portrait mode
 
+# License: WTFPL http://sam.zoy.org/wtfpl/
+
 from com.android.monkeyrunner import MonkeyRunner, MonkeyDevice
 import time
 import optparse
@@ -82,15 +84,7 @@ print 'waiting for device'
 device = MonkeyRunner.waitForConnection()
 print 'device attached'
 
-row_coordinates = (
-                    (28, 292, 748, 184),
-                    (28, 478, 748, 184),
-                    (28, 668, 748, 184),
-                    (28, 852, 748, 184)
-                  )
-
 input_string = raw_input("input: ").strip()
-#input_string = "antdeealesesscba"
 letters = [list(input_string[i:i+4]) for i in range(0,16,4)]
 
 start_time = time.time()
@@ -134,7 +128,7 @@ def tuple_to_string(word):
 def process(word):
     global cnt, q, device, start_time, small_words, opts
     string = tuple_to_string(word)
-    # string should be a valid word of length atleast 4 and hasn't been seen already
+    # string should be a valid word meeting length requirement
     add_word = True
     if trie.exists(string):
         if not found_words.exists(string):
