@@ -77,7 +77,6 @@ trie = Trie()
 for word in words:
     trie.add(word)
 print 'trie constructed in', time.time() - start_time, 'seconds'
-print 'done'
 
 print 'waiting for device'
 device = MonkeyRunner.waitForConnection()
