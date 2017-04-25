@@ -1,0 +1,17 @@
+{
+  "name": "Redfin Distance Generator",
+  "content_scripts": [
+    {
+      "matches": ["http://www.redfin.com/*", "https://www.redfin.com/*"],
+      "js": ["jquery.js", "script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "http://maps.googleapis.com/*",
+    "https://maps.googleapis.com/*"
+  ],
+  "manifest_version": 2,
+  "version": "1.0",
+  "description": "Shows the distance between the house and a specified location."
+}
