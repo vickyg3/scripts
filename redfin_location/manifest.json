@@ -1,5 +1,5 @@
 {
-  "name": "Redfin Distance Generator",
+  "name": "Enhance Redfin Data",
   "content_scripts": [
     {
       "matches": ["http://www.redfin.com/*", "https://www.redfin.com/*"],
@@ -9,7 +9,9 @@
   ],
   "permissions": [
     "http://maps.googleapis.com/*",
-    "https://maps.googleapis.com/*"
+    "https://maps.googleapis.com/*",
+    "http://www.greatschools.org/*",
+    "https://www.greatschools.org/*"
   ],
   "manifest_version": 2,
   "version": "1.0",
