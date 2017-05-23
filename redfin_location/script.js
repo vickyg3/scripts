@@ -45,10 +45,19 @@ function greatSchools() {
           var lowIncomeJson = JSON.parse(scriptText.substring(start, end));
           lowIncome = lowIncomeJson['Students participating in free or reduced-price lunch program'][0].school_value + '%';
         }
+        var ratingCSS = "display: inline-block; height: 25px; width: 25px; line-height: 25px; border-radius: 50%; color: white; text-align: center; background-color: ";
+        var ratingInt = parseInt(rating);
+        if (ratingInt <= 3) {
+          ratingCSS += "rgb(195, 81, 75);";
+        } else if (ratingInt <= 7) {
+          ratingCSS += "rgb(236, 132, 62);"
+        } else {
+          ratingCSS += "rgb(64, 167, 83);"
+        }
         var wstr = '';
+        wstr += '<span style="' + ratingCSS + '">' + rating + '</span> ';
         wstr += '<a href="http://' + gsUrl + '" target="_blank">' + $(node).html() + '</a>';
         wstr += "<ul>";
-        wstr += '<li>Rating: ' + rating + '</li>';
         if (ethnicity != '') {
           wstr += '<li>Ethnicity: ' + ethnicity + '</li>';
         }
