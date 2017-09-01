@@ -16,5 +16,4 @@ if __name__ == "__main__":
     estimate = re.match("\$([0-9]+),([0-9]+),.*", redfin_estimate).groups()
     print "%s.%sM" % (estimate[0], estimate[1])
   except:
-    raise
     print 'N/A'
