@@ -1,72 +1,84 @@
 function greatSchools() {
   $('.schools-content table .school-name').each(function (index, node) {
-    $('#gsRating').append('<li id="gsRating' + index + '">Loading ...</li>');
-    $.get('//www.redfin.com' + $(node).attr('href'), function(data) {
-      var gsUrl = $(data).find('a:contains("School Overview")').attr('href');
-      gsUrl = gsUrl.replace('https:', '');
-      gsUrl = gsUrl.replace('http:', '');
-      $.get(gsUrl, function(schoolData) {
-        var schoolDom = $(schoolData);
-        // rating
-        var ratingElements = schoolDom.find(".school-info .rs-gs-rating").contents().filter(function() { return this.nodeType === 3; });
-        var rating = ratingElements[0].textContent.trim();
-        // ethnicity and lowIncome
-        // Super ugly hack because jquery selector doesn't seem to find the script tag
-        var element = document.createElement('div');
-        element.insertAdjacentHTML('beforeend', schoolData);
-        var scripts = element.querySelectorAll('script');
-        var script = undefined;
-        for (var i = 0; i < scripts.length; i++) {
-          if (scripts[i].innerHTML.indexOf('gon.ethnicity') > -1) {
-            script = scripts[i];
+    var schoolName = $(node).html();
+    var schoolState = $('.region').first().text();
+    $.get('//www.greatschools.org/gsr/search/suggest/school?query=' + schoolName, function(data, status) {
+      if (status == "success" && data.length > 0) {
+        var dataIndex = -1;
+        for (var i = 0; i < data.length; i++) {
+          if (data[i].state == schoolState) {
+            dataIndex = i;
             break;
           }
         }
-        var ethnicity = '';
-        var lowIncome = '';
-        if (script !== undefined) {
-          var scriptText = script.innerHTML;
-          // compute ethnicity
-          var start = scriptText.indexOf('gon.ethnicity=[') + 'gon.ethnicity='.length;
-          var end = scriptText.indexOf(']', start) + 1;
-          var ethnicityJson = JSON.parse(scriptText.substring(start, end));
-          for (var i = 0; i < ethnicityJson.length; i++) {
-            ethnicity += ethnicityJson[i].breakdown + ' ' + Math.round(ethnicityJson[i].school_value) + '%';
-            if (i == 3) { // only print top 4
+        if (dataIndex == -1) {
+          return;
+        }
+        $('#gsRating').append('<li id="gsRating' + index + '">Loading ...</li>');
+        var gsUrl = "//www.greatschools.org" + data[dataIndex].url;
+        $.get(gsUrl, function(schoolData) {
+          var schoolDom = $(schoolData);
+          // rating
+          var ratingElements = schoolDom.find(".school-info .rs-gs-rating").contents().filter(function() { return this.nodeType === 3; });
+          var rating = ratingElements[0].textContent.trim();
+          // ethnicity and lowIncome
+          // Super ugly hack because jquery selector doesn't seem to find the script tag
+          var element = document.createElement('div');
+          element.insertAdjacentHTML('beforeend', schoolData);
+          var scripts = element.querySelectorAll('script');
+          var script = undefined;
+          for (var i = 0; i < scripts.length; i++) {
+            if (scripts[i].innerHTML.indexOf('gon.ethnicity') > -1) {
+              script = scripts[i];
               break;
             }
-            if (i != ethnicityJson.length - 1) {
-              ethnicity += ' | ';
-            }
           }
-          // compute low income
-          start = scriptText.indexOf('gon.subgroup=') + 'gon.subgroup='.length;
-          end = scriptText.indexOf(';', start);
-          var lowIncomeJson = JSON.parse(scriptText.substring(start, end));
-          lowIncome = lowIncomeJson['Students participating in free or reduced-price lunch program'][0].school_value + '%';
-        }
-        var ratingCSS = "display: inline-block; height: 25px; width: 25px; line-height: 25px; border-radius: 50%; color: white; text-align: center; background-color: ";
-        var ratingInt = parseInt(rating);
-        if (ratingInt <= 3) {
-          ratingCSS += "rgb(195, 81, 75);";
-        } else if (ratingInt <= 7) {
-          ratingCSS += "rgb(236, 132, 62);"
-        } else {
-          ratingCSS += "rgb(64, 167, 83);"
-        }
-        var wstr = '';
-        wstr += '<span style="' + ratingCSS + '">' + rating + '</span> ';
-        wstr += '<a href="http://' + gsUrl + '" target="_blank">' + $(node).html() + '</a>';
-        wstr += "<ul>";
-        if (ethnicity != '') {
-          wstr += '<li>Ethnicity: ' + ethnicity + '</li>';
-        }
-        if (lowIncome != '') {
-          wstr += '<li>Students from low-income families: ' + lowIncome + '</li>'
-        }
-        wstr += '</ul>';
-        $('#gsRating' + index).html(wstr);
-      });
+          var ethnicity = '';
+          var lowIncome = '';
+          if (script !== undefined) {
+            var scriptText = script.innerHTML;
+            // compute ethnicity
+            var start = scriptText.indexOf('gon.ethnicity=[') + 'gon.ethnicity='.length;
+            var end = scriptText.indexOf(']', start) + 1;
+            var ethnicityJson = JSON.parse(scriptText.substring(start, end));
+            for (var i = 0; i < ethnicityJson.length; i++) {
+              ethnicity += ethnicityJson[i].breakdown + ' ' + Math.round(ethnicityJson[i].school_value) + '%';
+              if (i == 3) { // only print top 4
+                break;
+              }
+              if (i != ethnicityJson.length - 1) {
+                ethnicity += ' | ';
+              }
+            }
+            // compute low income
+            start = scriptText.indexOf('gon.subgroup=') + 'gon.subgroup='.length;
+            end = scriptText.indexOf(';', start);
+            var lowIncomeJson = JSON.parse(scriptText.substring(start, end));
+            lowIncome = lowIncomeJson['Students participating in free or reduced-price lunch program'][0].school_value + '%';
+          }
+          var ratingCSS = "display: inline-block; height: 25px; width: 25px; line-height: 25px; border-radius: 50%; color: white; text-align: center; background-color: ";
+          var ratingInt = parseInt(rating);
+          if (ratingInt <= 3) {
+            ratingCSS += "rgb(195, 81, 75);";
+          } else if (ratingInt <= 7) {
+            ratingCSS += "rgb(236, 132, 62);"
+          } else {
+            ratingCSS += "rgb(64, 167, 83);"
+          }
+          var wstr = '';
+          wstr += '<span style="' + ratingCSS + '">' + rating + '</span> ';
+          wstr += '<a href="http://' + gsUrl + '" target="_blank">' + $(node).html() + '</a>';
+          wstr += "<ul>";
+          if (ethnicity != '') {
+            wstr += '<li>Ethnicity: ' + ethnicity + '</li>';
+          }
+          if (lowIncome != '') {
+            wstr += '<li>Students from low-income families: ' + lowIncome + '</li>'
+          }
+          wstr += '</ul>';
+          $('#gsRating' + index).html(wstr);
+        });
+      }
     });
   });
 }
