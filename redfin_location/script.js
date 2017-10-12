@@ -21,6 +21,22 @@ function greatSchools() {
           // rating
           var ratingElements = schoolDom.find(".school-info .rs-gs-rating").contents().filter(function() { return this.nodeType === 3; });
           var rating = ratingElements[0].textContent.trim();
+          // test score (roughly old rating for California) and other ratings
+          var ratingTitlesContainer = schoolDom.find("#academics-tour-anchor");
+          var ratingTitlesStr = "";
+          if (ratingTitlesContainer !== undefined) {
+            var ratingTitles = $(ratingTitlesContainer).find('.toc-entry');
+            for (var i = 0; i < ratingTitles.length; i++) {
+              ratingTitlesStr += $(ratingTitles[i]).find('span')[0].innerText;
+              var ratingScoresElements = $(ratingTitles[i]).find(".gs-rating").contents().filter(function() { return this.nodeType === 3; });
+              if (ratingScoresElements !== undefined && ratingScoresElements.length > 0) {
+                var scoreInt = parseInt(ratingScoresElements[0].textContent.trim());
+                ratingTitlesStr += ' <span style="' + getRatingCss(scoreInt) + '">' + scoreInt + '</span> ';
+              } else {
+                ratingTitlesStr += ' N/A ';
+              }
+            }
+          }
           // ethnicity and lowIncome
           // Super ugly hack because jquery selector doesn't seem to find the script tag
           var element = document.createElement('div');
@@ -56,19 +72,14 @@ function greatSchools() {
             var lowIncomeJson = JSON.parse(scriptText.substring(start, end));
             lowIncome = lowIncomeJson['Students participating in free or reduced-price lunch program'][0].school_value + '%';
           }
-          var ratingCSS = "display: inline-block; height: 25px; width: 25px; line-height: 25px; border-radius: 50%; color: white; text-align: center; background-color: ";
           var ratingInt = parseInt(rating);
-          if (ratingInt <= 3) {
-            ratingCSS += "rgb(195, 81, 75);";
-          } else if (ratingInt <= 7) {
-            ratingCSS += "rgb(236, 132, 62);"
-          } else {
-            ratingCSS += "rgb(64, 167, 83);"
-          }
           var wstr = '';
-          wstr += '<span style="' + ratingCSS + '">' + rating + '</span> ';
+          wstr += '<span style="' + getRatingCss(ratingInt) + '">' + rating + '</span> ';
           wstr += '<a href="http://' + gsUrl + '" target="_blank">' + $(node).html() + '</a>';
           wstr += "<ul>";
+          if (ratingTitlesStr != '') {
+            wstr += '<li>' + ratingTitlesStr + '</li>';
+          }
           if (ethnicity != '') {
             wstr += '<li>Ethnicity: ' + ethnicity + '</li>';
           }
@@ -81,6 +92,18 @@ function greatSchools() {
       }
     });
   });
+}
+
+function getRatingCss(rating) {
+  var ratingCSS = "display: inline-block; height: 25px; width: 25px; line-height: 25px; border-radius: 50%; color: white; text-align: center; background-color: ";
+  if (rating <= 3) {
+    ratingCSS += "rgb(195, 81, 75);";
+  } else if (rating <= 7) {
+    ratingCSS += "rgb(236, 132, 62);";
+  } else {
+    ratingCSS += "rgb(64, 167, 83);";
+  }
+  return ratingCSS;
 }
 
 // Copied from: http://stackoverflow.com/questions/149055/how-can-i-format-numbers-as-money-in-javascript
