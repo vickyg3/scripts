@@ -13,8 +13,10 @@
     "http://www.greatschools.org/*",
     "https://www.greatschools.org/*",
     "http://www.zillow.com/*",
-    "https://www.zillow.com/*"
+    "https://www.zillow.com/*",
+    "storage"
   ],
+  "options_page": "options.html",
   "manifest_version": 2,
   "version": "1.0",
   "description": "Shows the distance between the house and a specified location."

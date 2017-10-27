@@ -166,20 +166,25 @@ function zillow(address, cityStateZip) {
 };
 
 function distanceToPlaces(latitude, longitude) {
-  $.getJSON("//maps.googleapis.com/maps/api/directions/json?origin=" + latitude + "," + longitude + "&destination=3003+Bunker+Hill+Lane+Santa+Clara+CA", function(data1) {
-    $.getJSON("//maps.googleapis.com/maps/api/directions/json?origin=" + latitude + "," + longitude + "&destination=1600+Amphitheatre+Parkway+Mountain+View+CA", function(data2) {
-      var cisco = data1.routes[0].legs[0].distance.text;
-      var google = data2.routes[0].legs[0].distance.text;
-      var wstr = "";
-      wstr += "<a href=\"https://maps.google.com?saddr=" + latitude + "," + longitude + "&daddr=3003+Bunker+Hill+Lane+Santa+Clara+CA\" target=\"_blank\">";
-      wstr += "Cisco: " + cisco;
-      wstr += "</a>";
-      wstr += " | ";
-      wstr += "<a href=\"https://maps.google.com?saddr=" + latitude + "," + longitude + "&daddr=1600+Amphitheatre+Parkway+Mountain+View+CA\" target=\"_blank\">";
-      wstr += "Google: " + google;
-      wstr += "</a>";
-      // insert into DOM
-      $('#distanceToPlaces').html(wstr);
+  var placeIndices = [1, 2, 3];
+  placeIndices.forEach(function(placeIndex, index) {
+    var placeVariable = {}
+    placeVariable['place' + placeIndex + 'Label'] = '';
+    placeVariable['place' + placeIndex + 'Address'] = '';
+    chrome.storage.sync.get(placeVariable, function(place) {
+      var label = place['place' + placeIndex + 'Label'];
+      var address = place['place' + placeIndex + 'Address'];
+      console.log(placeIndex, label, address);
+      if (address != '') {
+        $('#distanceList').append('<li id="distanceEntry' + placeIndex + '">Loading ...</li>');
+        $.getJSON("//maps.googleapis.com/maps/api/directions/json?origin=" + latitude + "," + longitude + "&destination=" + address, function(data) {
+          var wstr = "";
+          wstr += "<a href=\"https://maps.google.com?saddr=" + latitude + "," + longitude + "&daddr=" + address + "\" target=\"_blank\">";
+          wstr += label + ": " + data.routes[0].legs[0].distance.text;
+          wstr += "</a>";
+          $('#distanceEntry' + placeIndex).html(wstr);
+        });
+      }
     });
   });
 };
@@ -199,7 +204,7 @@ container += '<span id="googleMapsLink">Loading ...</span>';
 container += '<br/>';
 // Distance to places
 container += '<b>Distance to places: </b>';
-container += '<span id="distanceToPlaces">Loading ...</span>';
+container += '<span><ul id="distanceList"></ul></span>';
 container += '<br/>';
 // Zillow
 container += '<b>Zillow: </b>';
