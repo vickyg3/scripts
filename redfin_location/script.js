@@ -2,17 +2,36 @@ function greatSchools() {
   $('.schools-content table .school-name').each(function (index, node) {
     var schoolName = $(node).html();
     var schoolState = $('.region').first().text();
+    var schoolCity = "" + $('.locality').first().text();
+    if (schoolCity !== undefined) {
+      schoolCity = schoolCity.toLowerCase();
+      schoolCity = schoolCity.replace(",", "");
+      schoolCity = schoolCity.trim();
+    }
     $.get('//www.greatschools.org/gsr/search/suggest/school?query=' + schoolName, function(data, status) {
       if (status == "success" && data.length > 0) {
         var dataIndex = -1;
-        for (var i = 0; i < data.length; i++) {
-          if (data[i].state == schoolState) {
-            dataIndex = i;
-            break;
+        // first check if there is a city match.
+        if (schoolCity !== undefined) {
+          for (var i = 0; i < data.length; i++) {
+            if (data[i].state == schoolState && data[i].city_name.toLowerCase() == schoolCity) {
+              dataIndex = i;
+              break;
+            }
           }
         }
+        // if there was no city match, do a state match.
         if (dataIndex == -1) {
-          return;
+          for (var i = 0; i < data.length; i++) {
+            if (data[i].state == schoolState) {
+              dataIndex = i;
+              break;
+            }
+          }
+          // if there is still no match, ignore.
+          if (dataIndex == -1) {
+            return;
+          }
         }
         $('#gsRating').append('<li id="gsRating' + index + '">Loading ...</li>');
         var gsUrl = "//www.greatschools.org" + data[dataIndex].url;
@@ -174,7 +193,6 @@ function distanceToPlaces(latitude, longitude) {
     chrome.storage.sync.get(placeVariable, function(place) {
       var label = place['place' + placeIndex + 'Label'];
       var address = place['place' + placeIndex + 'Address'];
-      console.log(placeIndex, label, address);
       if (address != '') {
         $('#distanceList').append('<li id="distanceEntry' + placeIndex + '">Loading ...</li>');
         $.getJSON("//maps.googleapis.com/maps/api/directions/json?origin=" + latitude + "," + longitude + "&destination=" + address, function(data) {
@@ -193,6 +211,10 @@ function googleMaps(latitude, longitude) {
   $('#googleMapsLink').html('<a target="_blank" href="http://maps.google.com/?q=' + latitude + ',' + longitude + '">Link</a>');
 };
 
+function redfinActivity() {
+  $('#redfinActivity').html($('.activityPanelContainer'));
+}
+
 // Create container
 var container = '';
 container += '<div class="remarks">';
@@ -210,6 +232,10 @@ container += '<br/>';
 container += '<b>Zillow: </b>';
 container += '<span id="zillowInfo">Loading ...</span>';
 container += '<br/>';
+// Redfin activity panel
+container += '<b>Redfin Activity:</b>';
+container += '<span id="redfinActivity">Loading ...</span>';
+container += "<br/>";
 // Greatschools rating
 container += '<b>Greatschools Ratings: </b>';
 container += '<span><ul id="gsRating"></ul></span>';
@@ -236,3 +262,4 @@ if (latitudeObj.length > 0 && longitudeObj.length > 0) {
   $('#distanceToPlaces').html('Could not find house location.');
 }
 greatSchools();
+redfinActivity();
