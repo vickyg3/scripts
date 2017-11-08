@@ -18,6 +18,6 @@
   ],
   "options_page": "options.html",
   "manifest_version": 2,
-  "version": "1.1",
+  "version": "1.2",
   "description": "Improves redfin experience with more information about houses."
 }

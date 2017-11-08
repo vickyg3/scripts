@@ -185,7 +185,7 @@ function zillow(address, cityStateZip) {
 };
 
 function distanceToPlaces(latitude, longitude) {
-  var placeIndices = [1, 2, 3];
+  var placeIndices = [1, 2, 3, 4];
   placeIndices.forEach(function(placeIndex, index) {
     var placeVariable = {}
     placeVariable['place' + placeIndex + 'Label'] = '';
