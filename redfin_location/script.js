@@ -217,7 +217,7 @@ function redfinActivity() {
 
 // Create container
 var container = '';
-container += '<div class="remarks">';
+container += '<div class="remarks2">';
 container += '<p class=""><span id="enhancementExtension">';
 container += '<h3>Enhanced Redfin Data</h3><br/>';
 // Google Map link
@@ -239,27 +239,36 @@ container += "<br/>";
 // Greatschools rating
 container += '<b>Greatschools Ratings: </b>';
 container += '<span><ul id="gsRating"></ul></span>';
-container += '</span></p></div>';
-// insert container into DOM
-$(container).insertBefore($("div .remarks"));
+container += '</span></p></div><br/>';
+// insert container into DOM. wait 5 seconds for redfin resources to load.
+// otherwise this seems to be over-written somehow.
+$(function() {
+  // super ugly hack alert.
+  setTimeout(function() {
+    $("div .content .remarks").prepend(container);
+    var addressObj = $("span[itemprop='streetAddress']");
+    var cityStateZipObj = $('span .citystatezip');
+    if (addressObj.length > 0 && cityStateZipObj.length > 0) {
+      var address = $(addressObj[0]).text().trim();
+      var cityStateZip = $(cityStateZipObj[0]).text().trim();
+      zillow(address, cityStateZip);
+    }
+    var latitudeObj = $("meta[itemprop='latitude']");
+    var longitudeObj = $("meta[itemprop='longitude']");
+    if (latitudeObj.length > 0 && longitudeObj.length > 0) {
+      var latitude = latitudeObj.attr("content");
+      var longitude = longitudeObj.attr("content");
+      googleMaps(latitude, longitude);
+      distanceToPlaces(latitude, longitude);
+    } else {
+      $('#googleMapsLink').html('Could not find house location.');
+      $('#distanceToPlaces').html('Could not find house location.');
+    }
+    greatSchools();
+    redfinActivity();
+  }, 5000);
+});
 
-var addressObj = $("span[itemprop='streetAddress']");
-var cityStateZipObj = $('span .citystatezip');
-if (addressObj.length > 0 && cityStateZipObj.length > 0) {
-  var address = $(addressObj[0]).text().trim();
-  var cityStateZip = $(cityStateZipObj[0]).text().trim();
-  zillow(address, cityStateZip);
-}
-var latitudeObj = $("meta[itemprop='latitude']");
-var longitudeObj = $("meta[itemprop='longitude']");
-if (latitudeObj.length > 0 && longitudeObj.length > 0) {
-  var latitude = latitudeObj.attr("content");
-  var longitude = longitudeObj.attr("content");
-  googleMaps(latitude, longitude);
-  distanceToPlaces(latitude, longitude);
-} else {
-  $('#googleMapsLink').html('Could not find house location.');
-  $('#distanceToPlaces').html('Could not find house location.');
-}
-greatSchools();
-redfinActivity();
+/*
+
+*/
