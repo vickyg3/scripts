@@ -38,51 +38,67 @@ def get_zestimate(data, rent):
   return (value, low, high)
 
 if __name__ == "__main__":
-  redfin_url = 'https://www.redfin.com/CA/Santa-Clara/3003-Monroe-St-95051/home/1294779'
+  redfin_urls = [
+      'https://www.redfin.com/CA/Santa-Clara/3003-Monroe-St-95051/home/1294779',
+      'https://www.redfin.com/CA/Fremont/43474-Newport-Dr-94538/home/527548',
+      'https://www.redfin.com/CA/Santa-Clara/3321-Pruneridge-Ave-95051/home/737513'
+  ]
   zws_id = 'X1-ZWz196sfugrtaj_6a5jo'
-  zpid = '19552594'
-  zillow_url = 'http://www.zillow.com/webservice/GetZestimate.htm?rentzestimate=true&zws-id=%(zws_id)s&zpid=%(zpid)s' % locals()
+  zpids = ['19552594', '25041322', '19598205']
   user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
   headers = {'User-Agent': user_agent}
-  try:
-    estimate = [datetime.now().strftime('%m/%d/%Y')]
-    # get redfin estimate
+  spreadsheetIds = [
+      '1BJ7cUThSWkcNYWdzmr9qW9MOHDVD2qWBl79dk7gUSZg',
+      '1VkUrhI5i4CfnvKJmLAiwaYlGaHiOhK_ieQiHQ4hIwtk',
+      '1rOrigbqCd68_QdDS-oWWiMWx2PPraIPCTOvPaPsS9nk'
+  ]
+  for i in range(len(redfin_urls)):
+    redfin_url = redfin_urls[i]
+    zpid = zpids[i]
+    zillow_url = 'http://www.zillow.com/webservice/GetZestimate.htm?rentzestimate=true&zws-id=%(zws_id)s&zpid=%(zpid)s' % locals()
     try:
-      soup = BeautifulSoup(requests.get(redfin_url, headers=headers).text, 'html.parser')
-      redfin_estimate = soup.find('div', {'data-rf-test-id': 'avm-price'}).find('div').text
-      estimate.append(redfin_estimate)
+      estimate = [datetime.now().strftime('%m/%d/%Y')]
+      # get redfin estimate
+      try:
+        soup = BeautifulSoup(requests.get(redfin_url, headers=headers).text, 'html.parser')
+        try:
+          redfin_estimate = soup.find('div', {'data-rf-test-id': 'avm-price'}).find('div').text
+        except:
+          try:
+            redfin_estimate = soup.find('span', {'data-rf-test-id': 'avmLdpPrice'}).find('span', {'class': 'value'}).text
+          except:
+            redfin_estimate = ''
+        estimate.append(redfin_estimate)
+      except:
+        estimate.append('')
+      # get zestimate
+      try:
+        xml = xmltodict.parse(requests.get(zillow_url).text)
+        estimate.extend(get_zestimate(xml, False))
+      except:
+        estimate.extend(['', '', ''])
+      try:
+        estimate.extend(get_zestimate(xml, True))
+      except:
+        estimate.extend(['', '', ''])
+      # insert into google sheet
+      credentials = get_credentials()
+      http = credentials.authorize(httplib2.Http())
+      discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                      'version=v4')
+      service = discovery.build('sheets', 'v4', http=http,
+                                discoveryServiceUrl=discoveryUrl)
+      sheetName = 'EstimateHistory'
+      body = {
+        'range': sheetName,
+        'values': [estimate]
+      }
+      result = service.spreadsheets().values().append(
+          spreadsheetId=spreadsheetIds[i],
+          range=sheetName,
+          valueInputOption='USER_ENTERED',
+          body=body).execute()
+      print result
     except:
       raise
-      estimate.append('')
-    # get zestimate
-    try:
-      xml = xmltodict.parse(requests.get(zillow_url).text)
-      estimate.extend(get_zestimate(xml, False))
-    except:
-      estimate.extend(['', '', ''])
-    try:
-      estimate.extend(get_zestimate(xml, True))
-    except:
-      estimate.extend(['', '', ''])
-    # insert into google sheet
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
-                    'version=v4')
-    service = discovery.build('sheets', 'v4', http=http,
-                              discoveryServiceUrl=discoveryUrl)
-    spreadsheetId = '1BJ7cUThSWkcNYWdzmr9qW9MOHDVD2qWBl79dk7gUSZg'
-    sheetName = 'EstimateHistory'
-    body = {
-      'range': sheetName,
-      'values': [estimate]
-    }
-    result = service.spreadsheets().values().append(
-        spreadsheetId=spreadsheetId,
-        range=sheetName,
-        valueInputOption='USER_ENTERED',
-        body=body).execute()
-    print result
-  except:
-    raise
-    pass
+      pass
