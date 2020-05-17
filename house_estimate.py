@@ -42,7 +42,7 @@ if __name__ == "__main__":
       'https://www.redfin.com/CA/Santa-Clara/3003-Monroe-St-95051/home/1294779',
       'https://www.redfin.com/CA/Fremont/43474-Newport-Dr-94538/home/527548',
       'https://www.redfin.com/CA/Santa-Clara/3321-Pruneridge-Ave-95051/home/737513',
-      'https://www.redfin.com/MI/Troy/4621-Bradley-Cir-48085/home/113431822']
+      'https://www.redfin.com/MI/Troy/4596-Bradley-Cir-48085/unit-21/home/144011152']
   zws_id = 'X1-ZWz196sfugrtaj_6a5jo'
   zpids = ['19552594', '25041322', '19598205', '2087627195']
   user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'
